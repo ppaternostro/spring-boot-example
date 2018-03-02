@@ -12,6 +12,26 @@ public class Employee extends Person
   private String ssn;
 
   /**
+   * Constructs an <code>Employee</code> object.
+   */
+  public Employee()
+  {
+
+  }
+
+  /**
+   * Constructs an employee object with the specified parameters.
+   * 
+   * @param id the id
+   * @param lastName the last name
+   */
+  public Employee(Long id, String lastName)
+  {
+    setId(id);
+    setLastName(lastName);
+  }
+
+  /**
    * Retrieves the id.
    * 
    * @return the id
