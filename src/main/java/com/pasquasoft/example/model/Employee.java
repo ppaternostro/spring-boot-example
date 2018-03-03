@@ -1,13 +1,20 @@
 package com.pasquasoft.example.model;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
 /**
  * A class that defines the attributes and behavior of an employee.
  * 
  * @author ppaternostro
  *
  */
+@Entity
 public class Employee extends Person
 {
+  @Id
+  @GeneratedValue
   private Long id;
   private String ssn;
 

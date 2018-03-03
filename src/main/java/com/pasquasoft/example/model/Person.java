@@ -1,11 +1,14 @@
 package com.pasquasoft.example.model;
 
+import javax.persistence.MappedSuperclass;
+
 /**
  * A class that defines the attributes and behavior of a person.
  * 
  * @author ppaternostro
  * 
  */
+@MappedSuperclass
 public abstract class Person
 {
   private String lastName;
