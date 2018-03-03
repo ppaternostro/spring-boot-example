@@ -4,6 +4,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 /**
  * A class that defines the attributes and behavior of an employee.
  * 
@@ -11,6 +14,7 @@ import javax.persistence.Id;
  *
  */
 @Entity
+@JsonInclude(Include.NON_EMPTY)
 public class Employee extends Person
 {
   @Id
