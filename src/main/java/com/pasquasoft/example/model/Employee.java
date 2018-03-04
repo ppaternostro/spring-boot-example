@@ -19,7 +19,7 @@ public class Employee extends Person
 {
   @Id
   @GeneratedValue
-  private Long id;
+  private Long employeeId;
   private String ssn;
 
   /**
@@ -33,33 +33,33 @@ public class Employee extends Person
   /**
    * Constructs an employee object with the specified parameters.
    * 
-   * @param id the id
    * @param lastName the last name
+   * @param firstName the first name
    */
-  public Employee(Long id, String lastName)
+  public Employee(String lastName, String firstName)
   {
-    setId(id);
     setLastName(lastName);
+    setFirstName(firstName);
   }
 
   /**
-   * Retrieves the id.
+   * Retrieves the employee id.
    * 
-   * @return the id
+   * @return the employee id
    */
-  public Long getId()
+  public Long getEmployeeId()
   {
-    return id;
+    return employeeId;
   }
 
   /**
-   * Sets the id.
+   * Sets the employee id.
    * 
-   * @param id the id
+   * @param employeeId the employee id
    */
-  public void setId(Long id)
+  public void setId(Long employeeId)
   {
-    this.id = id;
+    this.employeeId = employeeId;
   }
 
   /**
@@ -75,7 +75,7 @@ public class Employee extends Person
   /**
    * Sets the SSN.
    * 
-   * @param ssn the ssn
+   * @param ssn the SSN
    */
   public void setSsn(String ssn)
   {
@@ -87,7 +87,8 @@ public class Employee extends Person
   {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + ((id == null) ? 0 : id.hashCode());
+    result = prime * result
+        + ((employeeId == null) ? 0 : employeeId.hashCode());
     result = prime * result + ((ssn == null) ? 0 : ssn.hashCode());
     return result;
   }
@@ -102,12 +103,12 @@ public class Employee extends Person
     if (getClass() != obj.getClass())
       return false;
     Employee other = (Employee) obj;
-    if (id == null)
+    if (employeeId == null)
     {
-      if (other.id != null)
+      if (other.employeeId != null)
         return false;
     }
-    else if (!id.equals(other.id))
+    else if (!employeeId.equals(other.employeeId))
       return false;
     if (ssn == null)
     {
@@ -122,7 +123,7 @@ public class Employee extends Person
   @Override
   public String toString()
   {
-    return "Employee [id=" + id + ", ssn=" + ssn + ", "
+    return "Employee [employeeId=" + employeeId + ", ssn=" + ssn + ", "
         + super.toString() + "]";
   }
 
