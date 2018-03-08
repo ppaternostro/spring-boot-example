@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import com.pasquasoft.example.model.Employee;
 
 /**
- * The employee service class.
+ * The employee service.
  * 
  * @author ppaternostro
  *
@@ -16,19 +16,6 @@ import com.pasquasoft.example.model.Employee;
 @Service
 public class EmployeeService
 {
-  // private static final List<Employee> employees = new ArrayList<Employee>() {
-  // /**
-  // * Generated serial version UID.
-  // */
-  // private static final long serialVersionUID = 473436982328938528L;
-  //
-  // {
-  // add(new Employee(1L, "Lennon"));
-  // add(new Employee(2L, "McCartney"));
-  // add(new Employee(3L, "Harrison"));
-  // add(new Employee(4L, "Starr"));
-  // }
-  // };
   private EmployeeRepository employeeRepository;
 
   /*
@@ -54,10 +41,10 @@ public class EmployeeService
   }
 
   /**
-   * Retrieves an employee with the specified parameter,
+   * Retrieves an employee matching the specified id.
    * 
    * @param id the id
-   * @return an employee with the specified parameter
+   * @return an employee matching the specified id
    */
   public Employee getEmployee(Long id)
   {
