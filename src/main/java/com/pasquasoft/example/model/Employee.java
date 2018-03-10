@@ -1,8 +1,13 @@
 package com.pasquasoft.example.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -19,8 +24,10 @@ public class Employee extends Person
 {
   @Id
   @GeneratedValue
-  private Long employeeId;
+  private Long id;
   private String ssn;
+  @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Address> addresses = new ArrayList<>();
 
   /**
    * Constructs an <code>Employee</code> object.
@@ -43,23 +50,23 @@ public class Employee extends Person
   }
 
   /**
-   * Retrieves the employee id.
+   * Retrieves the id.
    * 
-   * @return the employee id
+   * @return the id
    */
-  public Long getEmployeeId()
+  public Long getId()
   {
-    return employeeId;
+    return id;
   }
 
   /**
-   * Sets the employee id.
+   * Sets the id.
    * 
-   * @param employeeId the employee id
+   * @param id the id
    */
-  public void setId(Long employeeId)
+  public void setId(Long id)
   {
-    this.employeeId = employeeId;
+    this.id = id;
   }
 
   /**
@@ -82,13 +89,45 @@ public class Employee extends Person
     this.ssn = ssn;
   }
 
+  /**
+   * Retrieves the addresses.
+   * 
+   * @return the addresses
+   */
+  public List<Address> getAddresses()
+  {
+    return addresses;
+  }
+
+  /**
+   * Sets the addresses.
+   * 
+   * @param addresses the addresses
+   */
+  public void setAddresses(List<Address> addresses)
+  {
+    this.addresses = addresses;
+  }
+
+  public void addAddress(Address address)
+  {
+    addresses.add(address);
+    address.setEmployee(this);
+  }
+
+  public void removeAddress(Address address)
+  {
+    addresses.remove(address);
+    address.setEmployee(null);
+  }
+
   @Override
   public int hashCode()
   {
     final int prime = 31;
     int result = super.hashCode();
     result = prime * result
-        + ((employeeId == null) ? 0 : employeeId.hashCode());
+        + ((id == null) ? 0 : id.hashCode());
     result = prime * result + ((ssn == null) ? 0 : ssn.hashCode());
     return result;
   }
@@ -103,12 +142,12 @@ public class Employee extends Person
     if (getClass() != obj.getClass())
       return false;
     Employee other = (Employee) obj;
-    if (employeeId == null)
+    if (id == null)
     {
-      if (other.employeeId != null)
+      if (other.id != null)
         return false;
     }
-    else if (!employeeId.equals(other.employeeId))
+    else if (!id.equals(other.id))
       return false;
     if (ssn == null)
     {
@@ -123,7 +162,7 @@ public class Employee extends Person
   @Override
   public String toString()
   {
-    return "Employee [employeeId=" + employeeId + ", ssn=" + ssn + ", "
+    return "Employee [id=" + id + ", ssn=" + ssn + ", "
         + super.toString() + "]";
   }
 
