@@ -1,11 +1,13 @@
 package com.pasquasoft.example.employee;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import com.pasquasoft.example.model.Employee;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 
 /**
  * The employee service.
@@ -33,11 +35,7 @@ public class EmployeeService
    */
   public List<Employee> getEmployees()
   {
-    ArrayList<Employee> employees = new ArrayList<>();
-
-    employeeRepository.findAll().forEach(employees::add);
-
-    return employees;
+    return employeeRepository.findAll();
   }
 
   /**
@@ -48,6 +46,27 @@ public class EmployeeService
    */
   public Employee getEmployee(Long id)
   {
-    return employeeRepository.findById(id).get();
+    return employeeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+  }
+
+  /**
+   * Saves the specified employee object.
+   * 
+   * @param employee employee object to be saved
+   * @return the saved employee object
+   */
+  public Employee save(@Valid Employee employee)
+  {
+    return employeeRepository.save(employee);
+  }
+
+  /**
+   * Deletes an employee matching the specified id.
+   * 
+   * @param id the id
+   */
+  public void deleteEmployee(Long id)
+  {
+    employeeRepository.deleteById(id);
   }
 }

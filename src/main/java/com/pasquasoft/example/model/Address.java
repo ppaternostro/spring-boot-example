@@ -1,14 +1,16 @@
 package com.pasquasoft.example.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotBlank;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 /**
  * A class that defines the attributes and behavior of an address.
@@ -18,14 +20,18 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
  */
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@JacksonXmlRootElement(localName = "address")
 public class Address
 {
   @Id
   @GeneratedValue
   private Long id;
+  @NotBlank(message = "Street is required")
   private String street;
   private String secondStreet;
+  @NotBlank(message = "City is required")
   private String city;
+  @NotBlank(message = "State is required")
   private String state;
   private String zip;
   @ManyToOne
@@ -227,9 +233,8 @@ public class Address
   @Override
   public String toString()
   {
-    return "Address [id=" + id + ", street=" + street + ", secondStreet="
-        + secondStreet + ", city=" + city + ", state=" + state + ", zip=" + zip
-        + ", employee=" + employee + "]";
+    return "Address [id=" + id + ", street=" + street + ", secondStreet=" + secondStreet + ", city=" + city + ", state="
+        + state + ", zip=" + zip + ", employee=" + employee + "]";
   }
 
 }

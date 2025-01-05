@@ -3,14 +3,19 @@ package com.pasquasoft.example.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.validation.Valid;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 /**
  * A class that defines the attributes and behavior of an employee.
@@ -20,13 +25,18 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
  */
 @Entity
 @JsonInclude(Include.NON_EMPTY)
+@JacksonXmlRootElement(localName = "employee")
 public class Employee extends Person
 {
   @Id
   @GeneratedValue
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private Long id;
   private String ssn;
   @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JacksonXmlElementWrapper(localName = "addresses")
+  @JacksonXmlProperty(localName = "address")
+  @Valid
   private List<Address> addresses = new ArrayList<>();
 
   /**
@@ -126,8 +136,7 @@ public class Employee extends Person
   {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result
-        + ((id == null) ? 0 : id.hashCode());
+    result = prime * result + ((id == null) ? 0 : id.hashCode());
     result = prime * result + ((ssn == null) ? 0 : ssn.hashCode());
     return result;
   }
@@ -162,8 +171,7 @@ public class Employee extends Person
   @Override
   public String toString()
   {
-    return "Employee [id=" + id + ", ssn=" + ssn + ", "
-        + super.toString() + "]";
+    return "Employee [id=" + id + ", ssn=" + ssn + ", " + super.toString() + "]";
   }
 
 }

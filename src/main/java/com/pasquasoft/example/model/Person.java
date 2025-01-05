@@ -1,6 +1,7 @@
 package com.pasquasoft.example.model;
 
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * A class that defines the attributes and behavior of a person.
@@ -11,7 +12,9 @@ import javax.persistence.MappedSuperclass;
 @MappedSuperclass
 public abstract class Person
 {
+  @NotBlank(message = "Last name is required")
   private String lastName;
+  @NotBlank(message = "First name is required")
   private String firstName;
   private String middleName;
 
@@ -82,8 +85,7 @@ public abstract class Person
     int result = 1;
     result = prime * result + ((firstName == null) ? 0 : firstName.hashCode());
     result = prime * result + ((lastName == null) ? 0 : lastName.hashCode());
-    result = prime * result
-        + ((middleName == null) ? 0 : middleName.hashCode());
+    result = prime * result + ((middleName == null) ? 0 : middleName.hashCode());
     return result;
   }
 
@@ -124,8 +126,7 @@ public abstract class Person
   @Override
   public String toString()
   {
-    return "Person [lastName=" + lastName + ", firstName=" + firstName
-        + ", middleName=" + middleName + "]";
+    return "Person [lastName=" + lastName + ", firstName=" + firstName + ", middleName=" + middleName + "]";
   }
 
 }

@@ -32,20 +32,18 @@ public class SpringBootExampleApplication
       Employee may = new Employee("May", "Brian");
       Employee taylor = new Employee("Taylor", "Roger");
       Employee deacon = new Employee("Deacon", "John");
+      Employee tyler = new Employee("Tyler", "Steven");
 
-      mercury
-          .addAddress(new Address("1 Abbey Road", "London", "Greater London"));
-      may
-          .addAddress(new Address("2 Abbey Road", "London", "Greater London"));
-      taylor
-          .addAddress(new Address("3 Abbey Road", "London", "Greater London"));
-      deacon
-          .addAddress(new Address("4 Abbey Road", "London", "Greater London"));
+      mercury.addAddress(new Address("1 Abbey Road", "London", "Greater London"));
+      may.addAddress(new Address("2 Abbey Road", "London", "Greater London"));
+      taylor.addAddress(new Address("3 Abbey Road", "London", "Greater London"));
+      deacon.addAddress(new Address("4 Abbey Road", "London", "Greater London"));
 
       employeeRepository.save(mercury);
       employeeRepository.save(may);
       employeeRepository.save(taylor);
       employeeRepository.save(deacon);
+      employeeRepository.save(tyler);
     };
   }
 }
