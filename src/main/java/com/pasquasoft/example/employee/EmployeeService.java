@@ -69,4 +69,23 @@ public class EmployeeService
   {
     employeeRepository.deleteById(id);
   }
+
+  /**
+   * Updates an employee matching the specified id.
+   * 
+   * @param id the id
+   */
+  public Employee updateEmployee(Long id, Employee updated)
+  {
+    Employee original = getEmployee(id);
+
+    original.setFirstName(updated.getFirstName());
+    original.setMiddleName(updated.getMiddleName());
+    original.setLastName(updated.getLastName());
+    original.setSsn(updated.getSsn());
+    original.getAddresses().clear();
+    updated.getAddresses().forEach(address -> original.addAddress(address));
+
+    return employeeRepository.save(original);
+  }
 }

@@ -1,5 +1,6 @@
 package com.pasquasoft.example;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -37,7 +38,7 @@ import java.util.stream.Stream;
 @TestInstance(Lifecycle.PER_CLASS)
 public class SpringBootExampleApplicationTests
 {
-  private static Map<String, String> employeeMap = Map.of("/1", "Mercury", "/2", "May", "/3", "Taylor", "/4", "Deacon");
+  private Map<String, String> employeeMap = Map.of("/1", "Mercury", "/2", "May", "/3", "Taylor");
 
   @Autowired
   private EmployeeController controller;
@@ -75,7 +76,7 @@ public class SpringBootExampleApplicationTests
   }
 
   @ParameterizedTest
-  @ValueSource(strings = { "/1", "/2", "/3", "/4" })
+  @ValueSource(strings = { "/1", "/2", "/3" })
   public void getEmployeeWithPathParamShouldReturnCorrectResult(String path)
   {
     ResponseEntity<Employee> response = restTemplate.exchange(url + path, HttpMethod.GET, null,
@@ -88,7 +89,8 @@ public class SpringBootExampleApplicationTests
   /*
    * REST DELETEs are idempotent. If an existing resource is deleted multiple
    * times the state of the server will be the same as if it only received that
-   * request once.
+   * request once. Deleting a non-existent resource has the same effect as
+   * deleting an existent resource multiple times. Thanks Captain Obvious! :-)
    */
   @ParameterizedTest
   @ValueSource(strings = { "/5", "/5", "/9000" })
@@ -105,30 +107,27 @@ public class SpringBootExampleApplicationTests
   @MethodSource("provideMediaType")
   public void postEmployeeShouldReturnCreatedEmployee(MediaType type)
   {
-    Employee payload = new Employee("Plant", "Robert");
-    payload.setAddresses(Arrays.asList(new Address("1 Abbey Road", "London", "Greater London")));
+    executeAndAssert(HttpMethod.POST, type, "");
+  }
 
-    HttpHeaders headers = new HttpHeaders();
+  @ParameterizedTest
+  @MethodSource("provideMediaType")
+  public void putEmployeeShouldReturnUpdatedEmployee(MediaType type)
+  {
+    executeAndAssert(HttpMethod.PUT, type, "/4");
+  }
 
-    headers.setAccept(Arrays.asList(type));
-    headers.setContentType(type);
+  @ParameterizedTest
+  @MethodSource("provideEmployee")
+  public void putEmployeeWithInvalidBodyShouldFail(Employee employee)
+  {
+    HttpEntity<Employee> requestEntity = new HttpEntity<Employee>(employee, null);
 
-    HttpEntity<Employee> requestEntity = new HttpEntity<Employee>(payload, headers);
-
-    ResponseEntity<Employee> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity,
+    ResponseEntity<Employee> response = restTemplate.exchange(url + "/1", HttpMethod.PUT, requestEntity,
         new ParameterizedTypeReference<Employee>() {
         });
 
-    Employee employee = response.getBody();
-
-    assertThat(employee).isNotNull();
-    assertThat(employee.getLastName()).isEqualTo("Plant");
-    assertThat(employee.getFirstName()).isEqualTo("Robert");
-    assertThat(employee.getAddresses()).isNotNull();
-    assertThat(employee.getAddresses().size()).isEqualTo(1);
-    assertThat(employee.getAddresses().get(0).getStreet()).isEqualTo("1 Abbey Road");
-    assertThat(employee.getAddresses().get(0).getCity()).isEqualTo("London");
-    assertThat(employee.getAddresses().get(0).getState()).isEqualTo("Greater London");
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
   }
 
   @ParameterizedTest
@@ -147,11 +146,57 @@ public class SpringBootExampleApplicationTests
         Arguments.of(HttpMethod.GET, "/a", HttpStatus.BAD_REQUEST),
         Arguments.of(HttpMethod.POST, "", HttpStatus.BAD_REQUEST),
         Arguments.of(HttpMethod.POST, "/1", HttpStatus.METHOD_NOT_ALLOWED),
+        Arguments.of(HttpMethod.PUT, "", HttpStatus.METHOD_NOT_ALLOWED),
+        Arguments.of(HttpMethod.PUT, "/0", HttpStatus.BAD_REQUEST),
         Arguments.of(HttpMethod.DELETE, "", HttpStatus.METHOD_NOT_ALLOWED));
   }
 
   private Stream<Arguments> provideMediaType()
   {
     return Stream.of(Arguments.of(MediaType.APPLICATION_JSON), Arguments.of(MediaType.APPLICATION_XML));
+  }
+
+  private Stream<Arguments> provideEmployee()
+  {
+    Employee employee = new Employee("Plant", "Robert");
+    employee.setAddresses(Arrays.asList(new Address(null, "", null)));
+
+    return Stream.of(Arguments.of(employee), Arguments.of((Employee) null), Arguments.of(new Employee()),
+        Arguments.of(new Employee("", null)), Arguments.of(new Employee("Mercury", "")),
+        Arguments.of(new Employee(null, "Freddie")));
+  }
+
+  private void executeAndAssert(HttpMethod method, MediaType type, String path)
+  {
+    String lastName = RandomStringUtils.secure().nextAlphabetic(10);
+    String firstName = RandomStringUtils.secure().nextAlphabetic(5);
+    String street = RandomStringUtils.secure().nextAlphabetic(8);
+    String city = RandomStringUtils.secure().nextAlphabetic(8);
+    String state = RandomStringUtils.secure().nextAlphabetic(8);
+
+    Employee payload = new Employee(lastName, firstName);
+    payload.setAddresses(Arrays.asList(new Address(street, city, state)));
+
+    HttpHeaders headers = new HttpHeaders();
+
+    headers.setAccept(Arrays.asList(type));
+    headers.setContentType(type);
+
+    HttpEntity<Employee> requestEntity = new HttpEntity<Employee>(payload, headers);
+
+    ResponseEntity<Employee> response = restTemplate.exchange(url + path, method, requestEntity,
+        new ParameterizedTypeReference<Employee>() {
+        });
+
+    Employee employee = response.getBody();
+
+    assertThat(employee).isNotNull();
+    assertThat(employee.getLastName()).isEqualTo(lastName);
+    assertThat(employee.getFirstName()).isEqualTo(firstName);
+    assertThat(employee.getAddresses()).isNotNull();
+    assertThat(employee.getAddresses().size()).isEqualTo(1);
+    assertThat(employee.getAddresses().get(0).getStreet()).isEqualTo(street);
+    assertThat(employee.getAddresses().get(0).getCity()).isEqualTo(city);
+    assertThat(employee.getAddresses().get(0).getState()).isEqualTo(state);
   }
 }
