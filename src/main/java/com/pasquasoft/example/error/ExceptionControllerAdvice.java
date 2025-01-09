@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import com.pasquasoft.example.exception.PatchConversionException;
+
 import jakarta.persistence.EntityNotFoundException;
 
 @ControllerAdvice
@@ -49,6 +51,14 @@ public class ExceptionControllerAdvice
   {
     LOG.info("Path parameter invalid: " + ex.getMessage());
     List<ApiError> errors = Collections.singletonList(new ApiError("id", ex.getMessage()));
+    return new ResponseEntity<ApiErrorResponse>(new ApiErrorResponse(errors), HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(value = PatchConversionException.class)
+  public ResponseEntity<ApiErrorResponse> handlePatchConversionException(PatchConversionException ex)
+  {
+    LOG.info("Patch JSON invalid: " + ex.getMessage());
+    List<ApiError> errors = Collections.singletonList(new ApiError("json-patch", ex.getMessage()));
     return new ResponseEntity<ApiErrorResponse>(new ApiErrorResponse(errors), HttpStatus.BAD_REQUEST);
   }
 

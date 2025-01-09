@@ -121,11 +121,39 @@ public class SpringBootExampleApplicationTests
   @MethodSource("provideEmployee")
   public void putEmployeeWithInvalidBodyShouldFail(Employee employee)
   {
-    HttpEntity<Employee> requestEntity = new HttpEntity<Employee>(employee, null);
+    HttpEntity<Employee> requestEntity = new HttpEntity<Employee>(employee);
 
     ResponseEntity<Employee> response = restTemplate.exchange(url + "/1", HttpMethod.PUT, requestEntity,
         new ParameterizedTypeReference<Employee>() {
         });
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+  }
+
+  @Test
+  public void patchEmployeeWithValidJsonShouldReturnUpdatedEmployee()
+  {
+    String payload = "[{\"op\": \"replace\",\"path\": \"/lastName\", \"value\": \"Bulsara\"},"
+        + "{\"op\": \"replace\",\"path\": \"/firstName\",\"value\": \"Farohk\"},"
+        + "{\"op\": \"remove\",\"path\": \"/addresses/0\"}]";
+
+    ResponseEntity<Employee> response = setHeadersAndPayloadAndExecute(payload);
+
+    HttpStatusCode statusCode = response.getStatusCode();
+    Employee employee = response.getBody();
+
+    assertThat(statusCode).isEqualTo(HttpStatus.OK);
+    assertThat(employee).isNotNull();
+    assertThat(employee.getLastName()).isEqualTo("Bulsara");
+    assertThat(employee.getFirstName()).isEqualTo("Farohk");
+    assertThat(employee.getAddresses()).isEmpty();
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = { "", "{}", "{[]}", "{\"op\": \"replace\",\"path\": \"/lastName\", \"value\": \"Bulsara\"}" })
+  public void patchEmployeeWithInvalidJsonShouldFail(String payload)
+  {
+    ResponseEntity<Employee> response = setHeadersAndPayloadAndExecute(payload);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
   }
@@ -139,6 +167,20 @@ public class SpringBootExampleApplicationTests
     assertThat(response.getStatusCode()).isEqualTo(statusCode);
   }
 
+  private ResponseEntity<Employee> setHeadersAndPayloadAndExecute(String payload)
+  {
+    HttpHeaders headers = new HttpHeaders();
+
+    headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+    headers.set("Content-Type", "application/json-patch+json");
+
+    HttpEntity<String> requestEntity = new HttpEntity<String>(payload, headers);
+
+    return restTemplate.exchange(url + "/4", HttpMethod.PATCH, requestEntity,
+        new ParameterizedTypeReference<Employee>() {
+        });
+  }
+
   private static Stream<Arguments> provideParamsForNegativeTests()
   {
     return Stream.of(Arguments.of(HttpMethod.GET, "/-1", HttpStatus.NOT_FOUND),
@@ -148,6 +190,8 @@ public class SpringBootExampleApplicationTests
         Arguments.of(HttpMethod.POST, "/1", HttpStatus.METHOD_NOT_ALLOWED),
         Arguments.of(HttpMethod.PUT, "", HttpStatus.METHOD_NOT_ALLOWED),
         Arguments.of(HttpMethod.PUT, "/0", HttpStatus.BAD_REQUEST),
+        Arguments.of(HttpMethod.PATCH, "", HttpStatus.METHOD_NOT_ALLOWED),
+        Arguments.of(HttpMethod.PATCH, "/0", HttpStatus.UNSUPPORTED_MEDIA_TYPE),
         Arguments.of(HttpMethod.DELETE, "", HttpStatus.METHOD_NOT_ALLOWED));
   }
 

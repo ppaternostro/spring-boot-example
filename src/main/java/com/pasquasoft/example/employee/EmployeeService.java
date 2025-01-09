@@ -4,7 +4,12 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
+import com.pasquasoft.example.exception.PatchConversionException;
 import com.pasquasoft.example.model.Employee;
+import com.pasquasoft.example.service.BaseService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -16,7 +21,7 @@ import jakarta.validation.Valid;
  *
  */
 @Service
-public class EmployeeService
+public class EmployeeService extends BaseService
 {
   private EmployeeRepository employeeRepository;
 
@@ -79,6 +84,35 @@ public class EmployeeService
   {
     Employee original = getEmployee(id);
 
+    return applyUpdatesAndSave(original, updated);
+  }
+
+  /**
+   * Partially updates an employee matching the specified id.
+   * 
+   * @param patch JsonPatch object
+   * @param id the id
+   */
+  public Employee patch(JsonPatch patch, Long id)
+  {
+    Employee original = getEmployee(id);
+    Employee patched;
+
+    try
+    {
+      patched = applyPatch(patch, original);
+    }
+    catch (JsonProcessingException | JsonPatchException e)
+    {
+      LOG.error("Patch conversion processing error: Employee", e);
+      throw new PatchConversionException(e.getMessage());
+    }
+
+    return applyUpdatesAndSave(original, patched);
+  }
+
+  private Employee applyUpdatesAndSave(Employee original, Employee updated)
+  {
     original.setFirstName(updated.getFirstName());
     original.setMiddleName(updated.getMiddleName());
     original.setLastName(updated.getLastName());
