@@ -51,7 +51,8 @@ public class EmployeeService extends BaseService
    */
   public Employee getEmployee(Long id)
   {
-    return employeeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+    return employeeRepository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException(String.format("Employee with id %d was not found", id)));
   }
 
   /**
