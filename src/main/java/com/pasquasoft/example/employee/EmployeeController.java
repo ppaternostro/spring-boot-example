@@ -60,7 +60,7 @@ public class EmployeeController
    * @return an employee matching the specified id
    */
   @GetMapping(path = "/{id}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
-  public Employee getEmployee(@PathVariable("id") Long id)
+  public Employee getEmployee(@PathVariable Long id)
   {
     return employeeService.getEmployee(id);
   }
@@ -72,7 +72,7 @@ public class EmployeeController
    * @return an updated employee matching the specified id
    */
   @PutMapping(path = "/{id}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
-  public Employee updateEmployee(@PathVariable("id") Long id, @Valid @RequestBody Employee employee)
+  public Employee updateEmployee(@PathVariable Long id, @Valid @RequestBody Employee employee)
   {
     return employeeService.updateEmployee(id, employee);
   }
@@ -95,7 +95,7 @@ public class EmployeeController
    * @param id the id
    */
   @DeleteMapping(path = "/{id}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
-  public void deleteEmployee(@PathVariable("id") Long id)
+  public void deleteEmployee(@PathVariable Long id)
   {
     employeeService.deleteEmployee(id);
   }
