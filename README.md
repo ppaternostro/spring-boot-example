@@ -47,5 +47,5 @@ Type the below command from a terminal window in the project's root folder.
 
 You can also run the application, after it's built, by executing the below command from the terminal window.
 
-`java -jar <JAR file location> <fully qualified Spring Boot application class>`
+`java -jar spring-boot-example-0.0.1-SNAPSHOT.jar`
 
