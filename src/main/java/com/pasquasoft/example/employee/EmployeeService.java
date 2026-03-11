@@ -3,6 +3,7 @@ package com.pasquasoft.example.employee;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.fge.jsonpatch.JsonPatch;
@@ -21,6 +22,7 @@ import jakarta.validation.Valid;
  *
  */
 @Service
+@Validated
 public class EmployeeService extends BaseService
 {
   private EmployeeRepository employeeRepository;
