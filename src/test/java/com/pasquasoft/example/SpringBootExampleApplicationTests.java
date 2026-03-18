@@ -1,5 +1,12 @@
 package com.pasquasoft.example;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -26,13 +33,6 @@ import org.springframework.http.ResponseEntity;
 import com.pasquasoft.example.employee.EmployeeController;
 import com.pasquasoft.example.model.Address;
 import com.pasquasoft.example.model.Employee;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @TestInstance(Lifecycle.PER_CLASS)
@@ -137,7 +137,8 @@ public class SpringBootExampleApplicationTests
         + "{\"op\": \"replace\",\"path\": \"/firstName\",\"value\": \"Farohk\"},"
         + "{\"op\": \"remove\",\"path\": \"/addresses/0\"}]";
 
-    ResponseEntity<Employee> response = setHeadersAndPayloadAndExecute(payload);
+    ResponseEntity<Employee> response = setHeadersAndPayloadAndExecute(MediaType.APPLICATION_JSON,
+        "application/json-patch+json", payload, 4);
 
     HttpStatusCode statusCode = response.getStatusCode();
     Employee employee = response.getBody();
@@ -153,9 +154,43 @@ public class SpringBootExampleApplicationTests
   @ValueSource(strings = { "", "{}", "{[]}", "{\"op\": \"replace\",\"path\": \"/lastName\", \"value\": \"Bulsara\"}" })
   public void patchEmployeeWithInvalidJsonShouldFail(String payload)
   {
-    ResponseEntity<Employee> response = setHeadersAndPayloadAndExecute(payload);
+    ResponseEntity<Employee> response = setHeadersAndPayloadAndExecute(MediaType.APPLICATION_JSON,
+        "application/json-patch+json", payload, 4);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+  }
+
+  @Test
+  public void patchEmployeeWithValidXmlShouldReturnUpdatedEmployee()
+  {
+    String payload = """
+        <diff>
+            <replace sel="employee/lastName/text()">Tallarico</replace>
+            <remove sel="employee/addresses/address[id=5]" />
+            <add sel="employee/addresses">
+                <address>
+                    <street>1535 Broadway</street>
+                    <city>New York City</city>
+                    <state>NY</state>
+                </address>
+            </add>
+        </diff>""";
+
+    ResponseEntity<Employee> response = setHeadersAndPayloadAndExecute(MediaType.APPLICATION_XML,
+        "application/xml-patch+xml", payload, 6);
+
+    HttpStatusCode statusCode = response.getStatusCode();
+    Employee employee = response.getBody();
+
+    assertThat(statusCode).isEqualTo(HttpStatus.OK);
+    assertThat(employee).isNotNull();
+    assertThat(employee.getLastName()).isEqualTo("Tallarico");
+    assertThat(employee.getFirstName()).isEqualTo("Steven");
+    assertThat(employee.getAddresses()).isNotEmpty();
+    assertThat(employee.getAddresses().size()).isEqualTo(1);
+    assertThat(employee.getAddresses().get(0).getStreet().equals("1535 Broadway"));
+    assertThat(employee.getAddresses().get(0).getCity().equals("New York City"));
+    assertThat(employee.getAddresses().get(0).getState().equals("NY"));
   }
 
   @ParameterizedTest
@@ -167,16 +202,17 @@ public class SpringBootExampleApplicationTests
     assertThat(response.getStatusCode()).isEqualTo(statusCode);
   }
 
-  private ResponseEntity<Employee> setHeadersAndPayloadAndExecute(String payload)
+  private ResponseEntity<Employee> setHeadersAndPayloadAndExecute(MediaType accept, String contentType, String payload,
+      int employeeId)
   {
     HttpHeaders headers = new HttpHeaders();
 
-    headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-    headers.set("Content-Type", "application/json-patch+json");
+    headers.setAccept(Arrays.asList(accept));
+    headers.set("Content-Type", contentType);
 
     HttpEntity<String> requestEntity = new HttpEntity<String>(payload, headers);
 
-    return restTemplate.exchange(url + "/4", HttpMethod.PATCH, requestEntity,
+    return restTemplate.exchange(url + "/" + employeeId, HttpMethod.PATCH, requestEntity,
         new ParameterizedTypeReference<Employee>() {
         });
   }

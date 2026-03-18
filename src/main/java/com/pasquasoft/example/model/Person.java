@@ -1,5 +1,7 @@
 package com.pasquasoft.example.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.MappedSuperclass;
 import jakarta.validation.constraints.NotBlank;
 
@@ -10,6 +12,7 @@ import jakarta.validation.constraints.NotBlank;
  * 
  */
 @MappedSuperclass
+@JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class Person
 {
   @NotBlank(message = "Last name is required")

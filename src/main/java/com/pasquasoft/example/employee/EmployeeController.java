@@ -111,4 +111,16 @@ public class EmployeeController
   {
     return employeeService.patch(patch, id);
   }
+
+  /**
+   * Partially updates an employee matching the specified id.
+   * 
+   * @param id the id
+   * @return an updated employee matching the specified id
+   */
+  @PatchMapping(path = "/{id}", consumes = "application/xml-patch+xml", produces = MediaType.APPLICATION_XML_VALUE)
+  public Employee xmlPatchEmployee(@RequestBody String xmlPatch, @PathVariable Long id)
+  {
+    return employeeService.patch(xmlPatch, id);
+  }
 }

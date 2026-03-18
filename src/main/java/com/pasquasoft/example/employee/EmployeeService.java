@@ -1,5 +1,6 @@
 package com.pasquasoft.example.employee;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -114,14 +115,38 @@ public class EmployeeService extends BaseService
     return applyUpdatesAndSave(original, patched);
   }
 
-  private Employee applyUpdatesAndSave(Employee original, Employee updated)
+  /**
+   * Partially updates an employee matching the specified id.
+   * 
+   * @param patchXml XML patch string
+   * @param id the id
+   */
+  public Employee patch(String patchXml, Long id)
   {
-    original.setFirstName(updated.getFirstName());
-    original.setMiddleName(updated.getMiddleName());
-    original.setLastName(updated.getLastName());
-    original.setSsn(updated.getSsn());
+    Employee original = getEmployee(id);
+    Employee patched;
+
+    try
+    {
+      patched = applyPatch(patchXml, original);
+    }
+    catch (IOException e)
+    {
+      LOG.error("Patch conversion processing error: Employee", e);
+      throw new PatchConversionException(e.getMessage());
+    }
+
+    return applyUpdatesAndSave(original, patched);
+  }
+
+  private Employee applyUpdatesAndSave(Employee original, Employee patched)
+  {
+    original.setFirstName(patched.getFirstName());
+    original.setMiddleName(patched.getMiddleName());
+    original.setLastName(patched.getLastName());
+    original.setSsn(patched.getSsn());
     original.getAddresses().clear();
-    updated.getAddresses().forEach(address -> original.addAddress(address));
+    patched.getAddresses().forEach(address -> original.addAddress(address));
 
     return employeeRepository.save(original);
   }

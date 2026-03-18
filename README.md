@@ -8,7 +8,11 @@ A Spring Boot example application.
 
 ### Background
 
-This Spring Boot application provides CRUD (Create, Read, Update, Delete) operations via a REST API for an employee domain model. A JSON PATCH operation (partial update) is also supported whose JSON is defined by [RFC (Request For Comments) 5261](https://datatracker.ietf.org/doc/html/rfc5261). The [json-patch](https://github.com/java-json-tools/json-patch) API implements the RFC and is used in the project to initiate partial updates. Refer to the article, [Using JSON Patch in Spring](https://www.baeldung.com/spring-rest-json-patch), to learn more about creating the proper JSON for partial updates.
+This Spring Boot application provides CRUD (Create, Read, Update, Delete) operations via a REST API for an employee domain model. 
+
+A JSON PATCH operation (partial update) is also supported whose JSON is defined by [RFC (Request For Comments) 6902](https://datatracker.ietf.org/doc/html/rfc6902). The [json-patch](https://github.com/java-json-tools/json-patch) API implements the RFC and is used in the project to initiate partial updates when consuming and producing JSON. Refer to the article, [Using JSON Patch in Spring](https://www.baeldung.com/spring-rest-json-patch), or consult the [RFC](https://datatracker.ietf.org/doc/html/rfc6902), to learn more about creating the proper JSON for partial updates.
+
+An XML PATCH operation is also supported whose XML is defined by [RFC 5261](https://datatracker.ietf.org/doc/html/rfc5261). The [xml-patch](https://github.com/dnault/xml-patch) API implements the RFC and is used in the project to initiate partial updates when consuming and producing XML. Refer to the API's [README](https://github.com/dnault/xml-patch?tab=readme-ov-file#xml-patch) and the [RFC 5261](https://datatracker.ietf.org/doc/html/rfc5261) documentation to learn more about creating the proper XML for partial updates.
 
 Upon application start-up an in-memory database (H2 database) is seeded with sample data. Verify the Spring Boot application is running by navigating to the below server address in your preferred browser.
 
@@ -16,7 +20,7 @@ Upon application start-up an in-memory database (H2 database) is seeded with sam
 
 You can also use `curl` in a terminal window: `curl localhost:8080/employees`
 
-The application supports consuming/producing (request/response) both XML and JSON. Navigating to `localhost:8080/employees` from the browser will produce XML output. You can use tools such as [Postman](https://www.postman.com/) to execute the CRUD REST verbs (POST, GET, PUT, DELETE) while specifying different options (e.g., parameters, authorization, headers, request body, etc.). The application's PATCH implementation currently **only** supports consuming and producing JSON.
+The application supports consuming/producing (request/response) both XML and JSON. Navigating to `localhost:8080/employees` from the browser will produce XML output. You can use tools such as [Postman](https://www.postman.com/) to execute the CRUD REST verbs (POST, GET, PUT, DELETE) while specifying different options (e.g., parameters, authorization, headers, request body, etc.).
 
 ### Building
 
@@ -43,7 +47,7 @@ Type the below command from a terminal window in the project's root folder.
 
 **Windows**
 
-`mvnw.bat spring-boot:run`
+`mvnw spring-boot:run`
 
 You can also run the application, after it's built, by executing the below command from the terminal window.
 
