@@ -133,9 +133,12 @@ public class SpringBootExampleApplicationTests
   @Test
   public void patchEmployeeWithValidJsonShouldReturnUpdatedEmployee()
   {
-    String payload = "[{\"op\": \"replace\",\"path\": \"/lastName\", \"value\": \"Bulsara\"},"
-        + "{\"op\": \"replace\",\"path\": \"/firstName\",\"value\": \"Farohk\"},"
-        + "{\"op\": \"remove\",\"path\": \"/addresses/0\"}]";
+    String payload = """
+        [
+          {"op": "replace", "path": "/lastName", "value": "Bulsara"},
+          {"op": "replace", "path": "/firstName", "value": "Farohk"},
+          {"op": "remove", "path": "/addresses/0"}
+        ]""";
 
     ResponseEntity<Employee> response = setHeadersAndPayloadAndExecute(MediaType.APPLICATION_JSON,
         "application/json-patch+json", payload, 4);
