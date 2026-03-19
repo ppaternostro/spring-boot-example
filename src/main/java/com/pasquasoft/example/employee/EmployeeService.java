@@ -94,17 +94,17 @@ public class EmployeeService extends BaseService
   /**
    * Partially updates an employee matching the specified id.
    * 
-   * @param patch JsonPatch object
+   * @param jsonPatch JsonPatch object
    * @param id the id
    */
-  public Employee patch(JsonPatch patch, Long id)
+  public Employee patch(JsonPatch jsonPatch, Long id)
   {
-    Employee original = getEmployee(id);
+    Employee unpatched = getEmployee(id);
     Employee patched;
 
     try
     {
-      patched = applyPatch(patch, original);
+      patched = applyPatch(jsonPatch, unpatched);
     }
     catch (JsonProcessingException | JsonPatchException e)
     {
@@ -112,23 +112,23 @@ public class EmployeeService extends BaseService
       throw new PatchConversionException(e.getMessage());
     }
 
-    return applyUpdatesAndSave(original, patched);
+    return applyUpdatesAndSave(unpatched, patched);
   }
 
   /**
    * Partially updates an employee matching the specified id.
    * 
-   * @param patchXml XML patch string
+   * @param xmlPatch XML patch string
    * @param id the id
    */
-  public Employee patch(String patchXml, Long id)
+  public Employee patch(String xmlPatch, Long id)
   {
-    Employee original = getEmployee(id);
+    Employee unpatched = getEmployee(id);
     Employee patched;
 
     try
     {
-      patched = applyPatch(patchXml, original);
+      patched = applyPatch(xmlPatch, unpatched);
     }
     catch (IOException e)
     {
@@ -136,17 +136,17 @@ public class EmployeeService extends BaseService
       throw new PatchConversionException(e.getMessage());
     }
 
-    return applyUpdatesAndSave(original, patched);
+    return applyUpdatesAndSave(unpatched, patched);
   }
 
-  private Employee applyUpdatesAndSave(Employee original, Employee patched)
+  private Employee applyUpdatesAndSave(Employee original, Employee updated)
   {
-    original.setFirstName(patched.getFirstName());
-    original.setMiddleName(patched.getMiddleName());
-    original.setLastName(patched.getLastName());
-    original.setSsn(patched.getSsn());
+    original.setFirstName(updated.getFirstName());
+    original.setMiddleName(updated.getMiddleName());
+    original.setLastName(updated.getLastName());
+    original.setSsn(updated.getSsn());
     original.getAddresses().clear();
-    patched.getAddresses().forEach(address -> original.addAddress(address));
+    updated.getAddresses().forEach(address -> original.addAddress(address));
 
     return employeeRepository.save(original);
   }

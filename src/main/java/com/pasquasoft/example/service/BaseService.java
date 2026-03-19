@@ -33,26 +33,26 @@ public abstract class BaseService
   protected XmlMapper xmlMapper;
 
   @SuppressWarnings("unchecked")
-  protected <T> T applyPatch(JsonPatch jsonPatch, T targetObject) throws JsonPatchException, JsonProcessingException
+  protected <T> T applyPatch(JsonPatch jsonPatch, T unpatchedObject) throws JsonPatchException, JsonProcessingException
   {
-    JsonNode patched = jsonPatch.apply(objectMapper.convertValue(targetObject, JsonNode.class));
-    return (T) objectMapper.treeToValue(patched, targetObject.getClass());
+    JsonNode patched = jsonPatch.apply(objectMapper.convertValue(unpatchedObject, JsonNode.class));
+    return (T) objectMapper.treeToValue(patched, unpatchedObject.getClass());
   }
 
   @SuppressWarnings("unchecked")
-  protected <T> T applyPatch(String patchXml, T existingObject) throws IOException
+  protected <T> T applyPatch(String xmlPatch, T unpatchedObject) throws IOException
   {
-    // Convert existing resource into an input stream
-    InputStream existingStream = new ByteArrayInputStream(xmlMapper.writeValueAsBytes(existingObject));
+    // Convert un-patched object into an input stream
+    InputStream unpatchedStream = new ByteArrayInputStream(xmlMapper.writeValueAsBytes(unpatchedObject));
 
-    // Convert incoming patch into an input stream
-    InputStream patchStream = new ByteArrayInputStream(patchXml.getBytes());
+    // Convert XML patch string into an input stream
+    InputStream patchStream = new ByteArrayInputStream(xmlPatch.getBytes());
 
     // Apply the patch
     OutputStream patchedStream = new ByteArrayOutputStream();
-    Patcher.patch(existingStream, patchStream, patchedStream);
+    Patcher.patch(unpatchedStream, patchStream, patchedStream);
 
-    return (T) xmlMapper.readValue(patchedStream.toString(), existingObject.getClass());
+    return (T) xmlMapper.readValue(patchedStream.toString(), unpatchedObject.getClass());
   }
 
 }
