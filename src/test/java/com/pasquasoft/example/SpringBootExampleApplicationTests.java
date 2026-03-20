@@ -202,6 +202,16 @@ public class SpringBootExampleApplicationTests
   }
 
   @ParameterizedTest
+  @ValueSource(strings = { "", "<diff></dif>", "<diff><replac sel=\"employee/lastName/text()\">Test</replac></diff>" })
+  public void patchEmployeeWithInvalidXmlShouldFail(String payload)
+  {
+    ResponseEntity<Employee> response = setHeadersAndPayloadAndExecute(MediaType.APPLICATION_XML,
+        "application/xml-patch+xml", payload, 4);
+
+    assertThat(response.getStatusCode()).isNotEqualTo(HttpStatus.OK);
+  }
+
+  @ParameterizedTest
   @MethodSource("provideParamsForNegativeTests")
   public void restCallsShouldReturnSpecifiedStatusCodes(HttpMethod method, String path, HttpStatusCode statusCode)
   {
