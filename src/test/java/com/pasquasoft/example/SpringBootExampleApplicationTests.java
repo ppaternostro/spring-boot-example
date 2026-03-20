@@ -137,7 +137,8 @@ public class SpringBootExampleApplicationTests
         [
           {"op": "replace", "path": "/lastName", "value": "Bulsara"},
           {"op": "replace", "path": "/firstName", "value": "Farohk"},
-          {"op": "remove", "path": "/addresses/0"}
+          {"op": "remove", "path": "/addresses/0"},
+          {"op": "add", "path": "/addresses/-", "value": {"street": "1535 Broadway", "city": "New York City", "state": "NY"} }
         ]""";
 
     ResponseEntity<Employee> response = setHeadersAndPayloadAndExecute(MediaType.APPLICATION_JSON,
@@ -150,7 +151,11 @@ public class SpringBootExampleApplicationTests
     assertThat(employee).isNotNull();
     assertThat(employee.getLastName()).isEqualTo("Bulsara");
     assertThat(employee.getFirstName()).isEqualTo("Farohk");
-    assertThat(employee.getAddresses()).isEmpty();
+    assertThat(employee.getAddresses()).isNotEmpty();
+    assertThat(employee.getAddresses().size()).isEqualTo(1);
+    assertThat(employee.getAddresses().get(0).getStreet().equals("1535 Broadway"));
+    assertThat(employee.getAddresses().get(0).getCity().equals("New York City"));
+    assertThat(employee.getAddresses().get(0).getState().equals("NY"));
   }
 
   @ParameterizedTest
