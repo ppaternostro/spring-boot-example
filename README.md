@@ -27,9 +27,9 @@ The application supports consuming/producing (request/response) both XML and JSO
 The application can be built via [Maven](https://maven.apache.org/) in a couple of ways. Execute the below from the application's root folder via the terminal window.
 
 1. Create a JAR file without executing tests.
-	- `./mvnw package -DskipTests`
+	- `mvnw package -DskipTests (use ./mvnw for MacOS/Linux based OSes)`
 2. Execute tests and create a JAR file.
-	- `./mvnw package`
+	- `mvnw package (use ./mvnw for MacOS/Linux based OSes)`
 
 The above will create a JAR file in the project's root folder's **target** directory.
 
