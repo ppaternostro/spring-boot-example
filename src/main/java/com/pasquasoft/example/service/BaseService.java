@@ -8,7 +8,6 @@ import java.io.OutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,11 +25,17 @@ public abstract class BaseService
 {
   protected static final Logger LOG = LoggerFactory.getLogger(BaseService.class);
 
-  @Autowired
-  protected ObjectMapper objectMapper;
-
-  @Autowired
-  protected XmlMapper xmlMapper;
+  protected final ObjectMapper objectMapper;
+  protected final XmlMapper xmlMapper;
+  
+  /*
+   * Favor constructor injection over attribute or setter injection.
+   */
+  protected BaseService(ObjectMapper objectMapper, XmlMapper xmlMapper)
+  {
+    this.objectMapper = objectMapper;
+    this.xmlMapper = xmlMapper;
+  }
 
   @SuppressWarnings("unchecked")
   protected <T> T applyPatch(JsonPatch jsonPatch, T unpatchedObject) throws JsonPatchException, JsonProcessingException

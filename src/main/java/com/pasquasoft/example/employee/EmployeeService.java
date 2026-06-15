@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 import com.pasquasoft.example.exception.PatchConversionException;
@@ -31,8 +33,10 @@ public class EmployeeService extends BaseService
   /*
    * Favor constructor injection over attribute or setter injection.
    */
-  public EmployeeService(EmployeeRepository employeeRepository)
+  public EmployeeService(ObjectMapper objectMapper, XmlMapper xmlMapper, EmployeeRepository employeeRepository)
   {
+    super(objectMapper, xmlMapper);
+
     this.employeeRepository = employeeRepository;
   }
 

@@ -1,6 +1,5 @@
 package com.pasquasoft.example;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,8 +15,15 @@ import com.pasquasoft.example.model.Employee;
 @SpringBootApplication
 public class SpringBootExampleApplication
 {
-  @Autowired
-  private EmployeeRepository employeeRepository;
+  private final EmployeeRepository employeeRepository;
+
+  /*
+   * Favor constructor injection over attribute or setter injection.
+   */
+  SpringBootExampleApplication(EmployeeRepository employeeRepository)
+  {
+    this.employeeRepository = employeeRepository;
+  }
 
   public static void main(String[] args)
   {
