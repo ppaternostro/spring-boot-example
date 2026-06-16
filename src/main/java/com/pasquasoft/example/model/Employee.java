@@ -3,19 +3,19 @@ package com.pasquasoft.example.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.validation.Valid;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.validation.Valid;
 
 /**
  * A class that defines the attributes and behavior of an employee.
@@ -36,8 +36,7 @@ public class Employee extends Person
   @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
   @JacksonXmlElementWrapper(localName = "addresses")
   @JacksonXmlProperty(localName = "address")
-  @Valid
-  private List<Address> addresses = new ArrayList<>();
+  private List<@Valid Address> addresses = new ArrayList<>();
 
   /**
    * Constructs an <code>Employee</code> object.
@@ -145,26 +144,46 @@ public class Employee extends Person
   public boolean equals(Object obj)
   {
     if (this == obj)
+    {
       return true;
+    }
+
     if (!super.equals(obj))
+    {
       return false;
+    }
+
     if (getClass() != obj.getClass())
+    {
       return false;
+    }
+
     Employee other = (Employee) obj;
+
     if (id == null)
     {
       if (other.id != null)
+      {
         return false;
+      }
     }
     else if (!id.equals(other.id))
+    {
       return false;
+    }
+
     if (ssn == null)
     {
       if (other.ssn != null)
+      {
         return false;
+      }
     }
     else if (!ssn.equals(other.ssn))
+    {
       return false;
+    }
+
     return true;
   }
 

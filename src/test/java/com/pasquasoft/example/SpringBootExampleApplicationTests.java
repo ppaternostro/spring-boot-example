@@ -19,16 +19,15 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.client.EntityExchangeResult;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 import com.pasquasoft.example.employee.EmployeeController;
 import com.pasquasoft.example.model.Address;
@@ -43,18 +42,21 @@ public class SpringBootExampleApplicationTests
   @Autowired
   private EmployeeController controller;
 
-  @Autowired
-  private TestRestTemplate restTemplate;
+  private RestTestClient restTestClient;
 
   @LocalServerPort
   private int port;
 
   private String url;
+  private String basePath;
 
   @BeforeAll
   public void init()
   {
-    url = "http://localhost:" + port + "/employees";
+    url = "http://localhost:" + port;
+    basePath = "/employees";
+
+    restTestClient = RestTestClient.bindToServer().baseUrl(url).build();
   }
 
   @Test
@@ -66,24 +68,20 @@ public class SpringBootExampleApplicationTests
   @Test
   public void getEmployeesShouldReturnResult()
   {
-    ResponseEntity<List<Employee>> response = restTemplate.exchange(url, HttpMethod.GET, null,
-        new ParameterizedTypeReference<List<Employee>>() {
-        });
+    List<Employee> employees = restTestClient.get().uri(basePath).exchange().expectStatus().isOk()
+        .expectBody(new ParameterizedTypeReference<List<Employee>>() {}).returnResult().getResponseBody();
 
-    List<Employee> employees = response.getBody();
-
-    assertThat(employees.size() > 0).isTrue();
+    assertThat(employees.isEmpty()).isFalse();
   }
 
   @ParameterizedTest
   @ValueSource(strings = { "/1", "/2", "/3" })
   public void getEmployeeWithPathParamShouldReturnCorrectResult(String path)
   {
-    ResponseEntity<Employee> response = restTemplate.exchange(url + path, HttpMethod.GET, null,
-        new ParameterizedTypeReference<Employee>() {
-        });
+    Employee employee = restTestClient.get().uri(basePath + path).exchange().expectStatus().isOk()
+        .expectBody(Employee.class).returnResult().getResponseBody();
 
-    assertThat(response.getBody().getLastName()).isEqualTo(employeeMap.get(path));
+    assertThat(employee.getLastName()).isEqualTo(employeeMap.get(path));
   }
 
   /*
@@ -96,11 +94,7 @@ public class SpringBootExampleApplicationTests
   @ValueSource(strings = { "/5", "/5", "/9000" })
   public void deleteEmployeeWithPathParamShouldReturnCorrectStatusCode(String path)
   {
-    ResponseEntity<Void> response = restTemplate.exchange(url + path, HttpMethod.DELETE, null,
-        new ParameterizedTypeReference<Void>() {
-        });
-
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    restTestClient.delete().uri(basePath + path).exchange().expectStatus().isOk();
   }
 
   @ParameterizedTest
@@ -123,11 +117,7 @@ public class SpringBootExampleApplicationTests
   {
     HttpEntity<Employee> requestEntity = new HttpEntity<Employee>(employee);
 
-    ResponseEntity<Employee> response = restTemplate.exchange(url + "/1", HttpMethod.PUT, requestEntity,
-        new ParameterizedTypeReference<Employee>() {
-        });
-
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    restTestClient.put().uri(basePath + "/1").body(requestEntity).exchange().expectStatus().isBadRequest();
   }
 
   @Test
@@ -141,11 +131,11 @@ public class SpringBootExampleApplicationTests
           {"op": "add", "path": "/addresses/-", "value": {"street": "1535 Broadway", "city": "New York City", "state": "NY"} }
         ]""";
 
-    ResponseEntity<Employee> response = setHeadersAndPayloadAndExecute(MediaType.APPLICATION_JSON,
+    EntityExchangeResult<Employee> result = setHeadersAndPayloadAndExecute(MediaType.APPLICATION_JSON,
         "application/json-patch+json", payload, 4);
 
-    HttpStatusCode statusCode = response.getStatusCode();
-    Employee employee = response.getBody();
+    HttpStatusCode statusCode = result.getStatus();
+    Employee employee = result.getResponseBody();
 
     assertThat(statusCode).isEqualTo(HttpStatus.OK);
     assertThat(employee).isNotNull();
@@ -162,10 +152,10 @@ public class SpringBootExampleApplicationTests
   @ValueSource(strings = { "", "{}", "{[]}", "{\"op\": \"replace\",\"path\": \"/lastName\", \"value\": \"Bulsara\"}" })
   public void patchEmployeeWithInvalidJsonShouldFail(String payload)
   {
-    ResponseEntity<Employee> response = setHeadersAndPayloadAndExecute(MediaType.APPLICATION_JSON,
+    EntityExchangeResult<Employee> result = setHeadersAndPayloadAndExecute(MediaType.APPLICATION_JSON,
         "application/json-patch+json", payload, 4);
 
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
   }
 
   @Test
@@ -184,11 +174,11 @@ public class SpringBootExampleApplicationTests
             </add>
         </diff>""";
 
-    ResponseEntity<Employee> response = setHeadersAndPayloadAndExecute(MediaType.APPLICATION_XML,
+    EntityExchangeResult<Employee> result = setHeadersAndPayloadAndExecute(MediaType.APPLICATION_XML,
         "application/xml-patch+xml", payload, 6);
 
-    HttpStatusCode statusCode = response.getStatusCode();
-    Employee employee = response.getBody();
+    HttpStatusCode statusCode = result.getStatus();
+    Employee employee = result.getResponseBody();
 
     assertThat(statusCode).isEqualTo(HttpStatus.OK);
     assertThat(employee).isNotNull();
@@ -205,34 +195,25 @@ public class SpringBootExampleApplicationTests
   @ValueSource(strings = { "", "<diff></dif>", "<diff><replac sel=\"employee/lastName/text()\">Test</replac></diff>" })
   public void patchEmployeeWithInvalidXmlShouldFail(String payload)
   {
-    ResponseEntity<Employee> response = setHeadersAndPayloadAndExecute(MediaType.APPLICATION_XML,
+    EntityExchangeResult<Employee> result = setHeadersAndPayloadAndExecute(MediaType.APPLICATION_XML,
         "application/xml-patch+xml", payload, 4);
 
-    assertThat(response.getStatusCode()).isNotEqualTo(HttpStatus.OK);
+    assertThat(result.getStatus()).isNotEqualTo(HttpStatus.OK);
   }
 
   @ParameterizedTest
   @MethodSource("provideParamsForNegativeTests")
   public void restCallsShouldReturnSpecifiedStatusCodes(HttpMethod method, String path, HttpStatusCode statusCode)
   {
-    ResponseEntity<?> response = restTemplate.exchange(url + path, method, null, (Class<?>) null);
-
-    assertThat(response.getStatusCode()).isEqualTo(statusCode);
+    restTestClient.method(method).uri(url + basePath + path).exchange().expectStatus().isEqualTo(statusCode);
   }
 
-  private ResponseEntity<Employee> setHeadersAndPayloadAndExecute(MediaType accept, String contentType, String payload,
-      int employeeId)
+  private EntityExchangeResult<Employee> setHeadersAndPayloadAndExecute(MediaType accept, String contentType,
+      String payload, int employeeId)
   {
-    HttpHeaders headers = new HttpHeaders();
 
-    headers.setAccept(Arrays.asList(accept));
-    headers.set("Content-Type", contentType);
-
-    HttpEntity<String> requestEntity = new HttpEntity<String>(payload, headers);
-
-    return restTemplate.exchange(url + "/" + employeeId, HttpMethod.PATCH, requestEntity,
-        new ParameterizedTypeReference<Employee>() {
-        });
+    return restTestClient.patch().uri(url + basePath + "/" + employeeId).accept(accept)
+        .contentType(MediaType.valueOf(contentType)).body(payload).exchange().returnResult(Employee.class);
   }
 
   private static Stream<Arguments> provideParamsForNegativeTests()
@@ -275,18 +256,8 @@ public class SpringBootExampleApplicationTests
     Employee payload = new Employee(lastName, firstName);
     payload.setAddresses(Arrays.asList(new Address(street, city, state)));
 
-    HttpHeaders headers = new HttpHeaders();
-
-    headers.setAccept(Arrays.asList(type));
-    headers.setContentType(type);
-
-    HttpEntity<Employee> requestEntity = new HttpEntity<Employee>(payload, headers);
-
-    ResponseEntity<Employee> response = restTemplate.exchange(url + path, method, requestEntity,
-        new ParameterizedTypeReference<Employee>() {
-        });
-
-    Employee employee = response.getBody();
+    Employee employee = restTestClient.method(method).uri(url + basePath + path).accept(type).contentType(type)
+        .body(payload).exchange().returnResult(Employee.class).getResponseBody();
 
     assertThat(employee).isNotNull();
     assertThat(employee.getLastName()).isEqualTo(lastName);

@@ -2,14 +2,13 @@ package com.pasquasoft.example.employee;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 import com.pasquasoft.example.exception.PatchConversionException;
 import com.pasquasoft.example.model.Employee;
@@ -98,10 +97,10 @@ public class EmployeeService extends BaseService
   /**
    * Partially updates an employee matching the specified id.
    * 
-   * @param jsonPatch JsonPatch object
+   * @param jsonPatch a list of map objects representing the patch JSON
    * @param id the id
    */
-  public Employee patch(JsonPatch jsonPatch, Long id)
+  public Employee patch(List<Map<String, Object>> jsonPatch, Long id)
   {
     Employee unpatched = getEmployee(id);
     Employee patched;
@@ -110,7 +109,7 @@ public class EmployeeService extends BaseService
     {
       patched = applyPatch(jsonPatch, unpatched);
     }
-    catch (JsonProcessingException | JsonPatchException e)
+    catch (JsonPatchException | IOException e)
     {
       LOG.error("Patch conversion processing error: Employee", e);
       throw new PatchConversionException(e.getMessage());

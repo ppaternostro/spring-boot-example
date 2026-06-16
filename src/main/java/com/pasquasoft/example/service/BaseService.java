@@ -5,13 +5,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -27,7 +28,7 @@ public abstract class BaseService
 
   protected final ObjectMapper objectMapper;
   protected final XmlMapper xmlMapper;
-  
+
   /*
    * Favor constructor injection over attribute or setter injection.
    */
@@ -38,10 +39,18 @@ public abstract class BaseService
   }
 
   @SuppressWarnings("unchecked")
-  protected <T> T applyPatch(JsonPatch jsonPatch, T unpatchedObject) throws JsonPatchException, JsonProcessingException
+  protected <T> T applyPatch(List<Map<String, Object>> jsonPatch, T unpatchedObject)
+      throws JsonPatchException, IOException
   {
-    JsonNode patched = jsonPatch.apply(objectMapper.convertValue(unpatchedObject, JsonNode.class));
-    return (T) objectMapper.treeToValue(patched, unpatchedObject.getClass());
+    JsonNode patchNode = objectMapper.valueToTree(jsonPatch);
+
+    JsonPatch patch = JsonPatch.fromJson(patchNode);
+
+    JsonNode targetNode = objectMapper.valueToTree(unpatchedObject);
+
+    JsonNode patchedNode = patch.apply(targetNode);
+
+    return (T) objectMapper.treeToValue(patchedNode, unpatchedObject.getClass());
   }
 
   @SuppressWarnings("unchecked")
