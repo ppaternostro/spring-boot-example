@@ -2,6 +2,7 @@ package com.pasquasoft.example.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -133,11 +134,7 @@ public class Employee extends Person
   @Override
   public int hashCode()
   {
-    final int prime = 31;
-    int result = super.hashCode();
-    result = prime * result + ((id == null) ? 0 : id.hashCode());
-    result = prime * result + ((ssn == null) ? 0 : ssn.hashCode());
-    return result;
+    return Objects.hash(super.hashCode(), id, ssn);
   }
 
   @Override

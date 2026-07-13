@@ -1,16 +1,18 @@
 package com.pasquasoft.example.model;
 
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 /**
  * A class that defines the attributes and behavior of an address.
@@ -204,29 +206,41 @@ public class Address
   @Override
   public int hashCode()
   {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((id == null) ? 0 : id.hashCode());
-    return result;
+    return Objects.hash(id);
   }
 
   @Override
   public boolean equals(Object obj)
   {
     if (this == obj)
+    {
       return true;
+    }
+
     if (obj == null)
+    {
       return false;
+    }
+
     if (getClass() != obj.getClass())
+    {
       return false;
+    }
+
     Address other = (Address) obj;
+
     if (id == null)
     {
       if (other.id != null)
+      {
         return false;
+      }
     }
     else if (!id.equals(other.id))
+    {
       return false;
+    }
+
     return true;
   }
 
