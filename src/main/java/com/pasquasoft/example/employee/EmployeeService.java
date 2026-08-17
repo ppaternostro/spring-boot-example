@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.flipkart.zjsonpatch.JsonPatchApplicationException;
+import com.github.dnault.xmlpatch.PatchException;
 import com.pasquasoft.example.exception.PatchConversionException;
 import com.pasquasoft.example.model.Employee;
 import com.pasquasoft.example.service.BaseService;
@@ -134,7 +135,7 @@ public class EmployeeService extends BaseService
     {
       patched = applyPatch(xmlPatch, unpatched);
     }
-    catch (IOException e)
+    catch (IOException | PatchException e)
     {
       LOG.error("Patch conversion processing error: Employee", e);
       throw new PatchConversionException(e.getMessage());

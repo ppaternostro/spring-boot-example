@@ -2,6 +2,8 @@ package com.pasquasoft.example;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +31,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.client.EntityExchangeResult;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.pasquasoft.example.employee.EmployeeController;
 import com.pasquasoft.example.model.Address;
 import com.pasquasoft.example.model.Employee;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @TestInstance(Lifecycle.PER_CLASS)
@@ -41,6 +47,12 @@ public class SpringBootExampleApplicationTests
 
   @Autowired
   private EmployeeController controller;
+
+  @Autowired
+  private ObjectMapper objectMapper;
+
+  @Autowired
+  private XmlMapper xmlMapper;
 
   private RestTestClient restTestClient;
 
@@ -201,11 +213,139 @@ public class SpringBootExampleApplicationTests
     assertThat(result.getStatus()).isNotEqualTo(HttpStatus.OK);
   }
 
+  @Test
+  public void patchEmployeeWithValidJsonListButInvalidOpsShouldReturnErrorBody() throws IOException
+  {
+    String payload = """
+        [{"op": "replace", "path": "/nonexistentField", "value": "Bulsara"}]""";
+
+    EntityExchangeResult<byte[]> result = restTestClient.patch().uri(url + basePath + "/4")
+        .accept(MediaType.APPLICATION_JSON).contentType(MediaType.valueOf("application/json-patch+json")).body(payload)
+        .exchange().expectStatus().isBadRequest().expectBody(byte[].class).returnResult();
+
+    assertErrorBody(result, MediaType.APPLICATION_JSON, "json-patch");
+  }
+
+  @Test
+  public void patchEmployeeWithMalformedXmlShouldReturnErrorBody() throws IOException
+  {
+    String payload = """
+        <diff>
+          <replace sel="employee/lastName/text()">Tallarico
+        </diff>""";
+
+    EntityExchangeResult<byte[]> result = restTestClient.patch().uri(url + basePath + "/4")
+        .accept(MediaType.APPLICATION_XML).contentType(MediaType.valueOf("application/xml-patch+xml")).body(payload)
+        .exchange().expectStatus().isBadRequest().expectBody(byte[].class).returnResult();
+
+    assertErrorBody(result, MediaType.APPLICATION_XML, "json-patch");
+  }
+
+  @Test
+  public void putEmployeeWithValidBodyToNonExistentIdShouldReturnNotFoundErrorBody() throws IOException
+  {
+    Employee payload = new Employee(RandomStringUtils.secure().nextAlphabetic(10), "John");
+
+    EntityExchangeResult<byte[]> result = restTestClient.put().uri(url + basePath + "/9000")
+        .contentType(MediaType.APPLICATION_JSON).body(payload).exchange().expectStatus().isNotFound()
+        .expectBody(byte[].class).returnResult();
+
+    assertErrorBody(result, MediaType.APPLICATION_JSON, "id");
+  }
+
+  @Test
+  public void patchEmployeeWithValidPayloadToNonExistentIdShouldReturnNotFoundErrorBody() throws IOException
+  {
+    String payload = """
+        [{"op": "replace", "path": "/lastName", "value": "Bulsara"}]""";
+
+    EntityExchangeResult<byte[]> result = restTestClient.patch().uri(url + basePath + "/9000")
+        .accept(MediaType.APPLICATION_JSON).contentType(MediaType.valueOf("application/json-patch+json")).body(payload)
+        .exchange().expectStatus().isNotFound().expectBody(byte[].class).returnResult();
+
+    assertErrorBody(result, MediaType.APPLICATION_JSON, "id");
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideEmployee")
+  public void postEmployeeWithInvalidBodyShouldFail(Employee employee)
+  {
+    HttpEntity<Employee> requestEntity = new HttpEntity<Employee>(employee);
+
+    restTestClient.post().uri(basePath).body(requestEntity).exchange().expectStatus().isBadRequest();
+  }
+
+  @Test
+  public void getEmployeesWithXmlAcceptShouldReturnResult()
+  {
+    List<Employee> employees = restTestClient.get().uri(basePath).accept(MediaType.APPLICATION_XML).exchange()
+        .expectStatus().isOk().expectBody(new ParameterizedTypeReference<List<Employee>>() {}).returnResult()
+        .getResponseBody();
+
+    assertThat(employees).isNotEmpty();
+  }
+
+  @Test
+  public void getEmployeeWithXmlAcceptShouldReturnCorrectResult()
+  {
+    Employee employee = restTestClient.get().uri(basePath + "/1").accept(MediaType.APPLICATION_XML).exchange()
+        .expectStatus().isOk().expectBody(Employee.class).returnResult().getResponseBody();
+
+    assertThat(employee.getLastName()).isEqualTo("Mercury");
+  }
+
+  @Test
+  public void getNonExistentEmployeeShouldReturnNotFoundErrorBody() throws IOException
+  {
+    EntityExchangeResult<byte[]> result = restTestClient.get().uri(url + basePath + "/-1").exchange().expectStatus()
+        .isNotFound().expectBody(byte[].class).returnResult();
+
+    assertErrorBody(result, MediaType.APPLICATION_JSON, "id");
+  }
+
+  @Test
+  public void putEmployeeWithInvalidBodyShouldReturnValidationErrorBody() throws IOException
+  {
+    HttpEntity<Employee> requestEntity = new HttpEntity<Employee>(new Employee("", null));
+
+    EntityExchangeResult<byte[]> result = restTestClient.put().uri(url + basePath + "/1").body(requestEntity).exchange()
+        .expectStatus().isBadRequest().expectBody(byte[].class).returnResult();
+
+    assertErrorBody(result, MediaType.APPLICATION_JSON, "firstName", "lastName");
+  }
+
   @ParameterizedTest
   @MethodSource("provideParamsForNegativeTests")
   public void restCallsShouldReturnSpecifiedStatusCodes(HttpMethod method, String path, HttpStatusCode statusCode)
   {
     restTestClient.method(method).uri(url + basePath + path).exchange().expectStatus().isEqualTo(statusCode);
+  }
+
+  private void assertErrorBody(EntityExchangeResult<byte[]> result, MediaType mediaType, String... expectedFieldNames)
+      throws IOException
+  {
+    List<String> fieldNames;
+
+    if (MediaType.APPLICATION_XML.equalsTypeAndSubtype(mediaType))
+    {
+      com.fasterxml.jackson.databind.JsonNode errors = xmlMapper.readTree(result.getResponseBody()).get("errors");
+
+      assertThat(errors).isNotNull();
+
+      fieldNames = new ArrayList<>();
+      errors.forEach(error -> fieldNames.add(error.get("fieldName").asText()));
+    }
+    else
+    {
+      JsonNode errors = objectMapper.readTree(result.getResponseBody()).get("errors");
+
+      assertThat(errors).isNotNull();
+
+      fieldNames = new ArrayList<>();
+      errors.forEach(error -> fieldNames.add(error.get("fieldName").asString()));
+    }
+
+    assertThat(fieldNames).containsExactlyInAnyOrder(expectedFieldNames);
   }
 
   private EntityExchangeResult<Employee> setHeadersAndPayloadAndExecute(MediaType accept, String contentType,
