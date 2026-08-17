@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -49,20 +49,19 @@ public abstract class BaseService
     return objectMapper.treeToValue(patchedNode, targetType);
   }
 
-  @SuppressWarnings("unchecked")
-  protected <T> T applyPatch(String xmlPatch, T unpatchedObject) throws IOException
+  protected <T> T applyPatch(String xmlPatch, T unpatchedObject, Class<T> targetType) throws IOException
   {
     // Convert un-patched object into an input stream
     InputStream unpatchedStream = new ByteArrayInputStream(xmlMapper.writeValueAsBytes(unpatchedObject));
 
     // Convert XML patch string into an input stream
-    InputStream patchStream = new ByteArrayInputStream(xmlPatch.getBytes());
+    InputStream patchStream = new ByteArrayInputStream(xmlPatch.getBytes(StandardCharsets.UTF_8));
 
     // Apply the patch
-    OutputStream patchedStream = new ByteArrayOutputStream();
+    ByteArrayOutputStream patchedStream = new ByteArrayOutputStream();
     Patcher.patch(unpatchedStream, patchStream, patchedStream);
 
-    return (T) xmlMapper.readValue(patchedStream.toString(), unpatchedObject.getClass());
+    return xmlMapper.readValue(patchedStream.toByteArray(), targetType);
   }
 
 }

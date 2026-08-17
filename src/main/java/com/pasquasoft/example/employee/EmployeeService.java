@@ -133,7 +133,7 @@ public class EmployeeService extends BaseService
 
     try
     {
-      patched = applyPatch(xmlPatch, unpatched);
+      patched = applyPatch(xmlPatch, unpatched, Employee.class);
     }
     catch (IOException | PatchException e)
     {

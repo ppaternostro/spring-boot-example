@@ -223,6 +223,27 @@ public class EmployeeServiceTests
   }
 
   @Test
+  public void patchWithXmlPatchContainingNonAsciiCharactersShouldPreserveThem()
+  {
+    Employee unpatched = new Employee("Mercury", "Freddie");
+    unpatched.setId(6L);
+
+    when(employeeRepository.findById(6L)).thenReturn(Optional.of(unpatched));
+    when(employeeRepository.save(any(Employee.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+    String xmlPatch = """
+        <diff>
+          <replace sel="employee/lastName/text()">Jos\u00e9 Garc\u00eda</replace>
+        </diff>""";
+
+    Employee result = employeeService.patch(xmlPatch, 6L);
+
+    assertThat(result).isSameAs(unpatched);
+    assertThat(result.getLastName()).isEqualTo("José García");
+    verify(employeeRepository).save(unpatched);
+  }
+
+  @Test
   public void patchWithXmlShouldWrapProcessingErrorsIntoPatchConversionException() throws JsonProcessingException
   {
     Employee unpatched = new Employee("Mercury", "Freddie");
