@@ -13,12 +13,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.flipkart.zjsonpatch.Jackson3JsonPatch;
 import com.github.dnault.xmlpatch.Patcher;
-import com.github.fge.jsonpatch.JsonPatch;
-import com.github.fge.jsonpatch.JsonPatchException;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 @Service
 @Transactional
@@ -38,19 +38,15 @@ public abstract class BaseService
     this.xmlMapper = xmlMapper;
   }
 
-  @SuppressWarnings("unchecked")
-  protected <T> T applyPatch(List<Map<String, Object>> jsonPatch, T unpatchedObject)
-      throws JsonPatchException, IOException
+  protected <T> T applyPatch(List<Map<String, Object>> jsonPatch, T targetObject, Class<T> targetType)
   {
     JsonNode patchNode = objectMapper.valueToTree(jsonPatch);
 
-    JsonPatch patch = JsonPatch.fromJson(patchNode);
+    JsonNode targetNode = objectMapper.valueToTree(targetObject);
 
-    JsonNode targetNode = objectMapper.valueToTree(unpatchedObject);
+    JsonNode patchedNode = Jackson3JsonPatch.apply(patchNode, targetNode);
 
-    JsonNode patchedNode = patch.apply(targetNode);
-
-    return (T) objectMapper.treeToValue(patchedNode, unpatchedObject.getClass());
+    return objectMapper.treeToValue(patchedNode, targetType);
   }
 
   @SuppressWarnings("unchecked")

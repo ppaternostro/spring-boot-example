@@ -7,15 +7,16 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.github.fge.jsonpatch.JsonPatchException;
+import com.flipkart.zjsonpatch.JsonPatchApplicationException;
 import com.pasquasoft.example.exception.PatchConversionException;
 import com.pasquasoft.example.model.Employee;
 import com.pasquasoft.example.service.BaseService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * The employee service.
@@ -107,9 +108,9 @@ public class EmployeeService extends BaseService
 
     try
     {
-      patched = applyPatch(jsonPatch, unpatched);
+      patched = applyPatch(jsonPatch, unpatched, Employee.class);
     }
-    catch (JsonPatchException | IOException e)
+    catch (JsonPatchApplicationException | JacksonException e)
     {
       LOG.error("Patch conversion processing error: Employee", e);
       throw new PatchConversionException(e.getMessage());
