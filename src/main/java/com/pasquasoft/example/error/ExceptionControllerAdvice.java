@@ -143,10 +143,10 @@ public class ExceptionControllerAdvice
     List<ApiError> errors = new ArrayList<>();
 
     bindingResult.getAllErrors().forEach(error -> {
-      String fieldName = error instanceof FieldError fieldError ? fieldError.getField() : error.getObjectName();
+      String target = error instanceof FieldError fieldError ? fieldError.getField() : error.getObjectName();
 
       String errorCode = error.getDefaultMessage();
-      errors.add(new ApiError(fieldName, errorCode));
+      errors.add(new ApiError(target, errorCode));
     });
 
     return ResponseEntity.badRequest().body(new ApiErrorResponse(errors));

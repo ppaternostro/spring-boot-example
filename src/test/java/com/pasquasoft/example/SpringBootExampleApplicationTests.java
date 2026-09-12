@@ -321,10 +321,10 @@ public class SpringBootExampleApplicationTests
     restTestClient.method(method).uri(url + basePath + path).exchange().expectStatus().isEqualTo(statusCode);
   }
 
-  private void assertErrorBody(EntityExchangeResult<byte[]> result, MediaType mediaType, String... expectedFieldNames)
+  private void assertErrorBody(EntityExchangeResult<byte[]> result, MediaType mediaType, String... expectedTargets)
       throws IOException
   {
-    List<String> fieldNames;
+    List<String> targets;
 
     if (MediaType.APPLICATION_XML.equalsTypeAndSubtype(mediaType))
     {
@@ -332,8 +332,8 @@ public class SpringBootExampleApplicationTests
 
       assertThat(errors).isNotNull();
 
-      fieldNames = new ArrayList<>();
-      errors.forEach(error -> fieldNames.add(error.get("fieldName").asText()));
+      targets = new ArrayList<>();
+      errors.forEach(error -> targets.add(error.get("target").asText()));
     }
     else
     {
@@ -341,11 +341,11 @@ public class SpringBootExampleApplicationTests
 
       assertThat(errors).isNotNull();
 
-      fieldNames = new ArrayList<>();
-      errors.forEach(error -> fieldNames.add(error.get("fieldName").asString()));
+      targets = new ArrayList<>();
+      errors.forEach(error -> targets.add(error.get("target").asString()));
     }
 
-    assertThat(fieldNames).containsExactlyInAnyOrder(expectedFieldNames);
+    assertThat(targets).containsExactlyInAnyOrder(expectedTargets);
   }
 
   private EntityExchangeResult<Employee> setHeadersAndPayloadAndExecute(MediaType accept, String contentType,
