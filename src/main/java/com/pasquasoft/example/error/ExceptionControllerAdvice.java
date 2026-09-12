@@ -39,13 +39,13 @@ public class ExceptionControllerAdvice
     return mapToApiErrorResponse(ex.getBindingResult());
   }
 
-  @ExceptionHandler(value = BindException.class)
+  @ExceptionHandler(BindException.class)
   public ResponseEntity<ApiErrorResponse> handleBindException(BindException ex)
   {
     return mapToApiErrorResponse(ex.getBindingResult());
   }
 
-  @ExceptionHandler(value = EntityNotFoundException.class)
+  @ExceptionHandler(EntityNotFoundException.class)
   public ResponseEntity<ApiErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex)
   {
     LOG.warn("Entity not found: " + ex.getMessage());
@@ -114,7 +114,7 @@ public class ExceptionControllerAdvice
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiErrorResponse(errors));
   }
 
-  @ExceptionHandler(value = PatchConversionException.class)
+  @ExceptionHandler(PatchConversionException.class)
   public ResponseEntity<ApiErrorResponse> handlePatchConversionException(PatchConversionException ex)
   {
     LOG.warn("Patch data invalid: " + ex.getMessage());
@@ -130,7 +130,7 @@ public class ExceptionControllerAdvice
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiErrorResponse(errors));
   }
 
-  @ExceptionHandler(value = Exception.class)
+  @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiErrorResponse> handleException(Exception ex)
   {
     LOG.warn("Unhandled exception: " + ex.getMessage());
