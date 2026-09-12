@@ -223,7 +223,7 @@ public class SpringBootExampleApplicationTests
         .accept(MediaType.APPLICATION_JSON).contentType(MediaType.valueOf("application/json-patch+json")).body(payload)
         .exchange().expectStatus().isBadRequest().expectBody(byte[].class).returnResult();
 
-    assertErrorBody(result, MediaType.APPLICATION_JSON, "json-patch");
+    assertErrorBody(result, MediaType.APPLICATION_JSON, "patch");
   }
 
   @Test
@@ -238,7 +238,7 @@ public class SpringBootExampleApplicationTests
         .accept(MediaType.APPLICATION_XML).contentType(MediaType.valueOf("application/xml-patch+xml")).body(payload)
         .exchange().expectStatus().isBadRequest().expectBody(byte[].class).returnResult();
 
-    assertErrorBody(result, MediaType.APPLICATION_XML, "json-patch");
+    assertErrorBody(result, MediaType.APPLICATION_XML, "patch");
   }
 
   @Test
