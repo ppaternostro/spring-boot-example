@@ -151,7 +151,11 @@ public class EmployeeService extends BaseService
     original.setLastName(updated.getLastName());
     original.setSsn(updated.getSsn());
     original.getAddresses().clear();
-    updated.getAddresses().forEach(address -> original.addAddress(address));
+
+    if (updated.getAddresses() != null)
+    {
+      updated.getAddresses().forEach(address -> original.addAddress(address));
+    }
 
     return employeeRepository.save(original);
   }

@@ -58,7 +58,7 @@ public class ExceptionControllerAdvice
   {
     String parameterName = ex.getName();
     LOG.warn("Invalid path parameter: {}={}", parameterName, ex.getValue());
-    List<ApiError> errors = Collections.singletonList(new ApiError(parameterName, "Invalid"));
+    List<ApiError> errors = Collections.singletonList(new ApiError(parameterName, ex.getMessage()));
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiErrorResponse(errors));
   }
 
@@ -67,7 +67,7 @@ public class ExceptionControllerAdvice
   {
     String contentType = ex.getContentType() != null ? ex.getContentType().toString() : "unknown";
     LOG.warn("Unsupported Content-Type: {}", contentType);
-    List<ApiError> errors = Collections.singletonList(new ApiError("Content-Type", "Unsupported"));
+    List<ApiError> errors = Collections.singletonList(new ApiError("Content-Type", ex.getMessage()));
     return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(new ApiErrorResponse(errors));
   }
 
@@ -75,7 +75,7 @@ public class ExceptionControllerAdvice
   public ResponseEntity<ApiErrorResponse> handleMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException ex)
   {
     LOG.warn("Accept header not acceptable: {}", ex.getMessage());
-    List<ApiError> errors = Collections.singletonList(new ApiError("Accept", "NotAcceptable"));
+    List<ApiError> errors = Collections.singletonList(new ApiError("Accept", ex.getMessage()));
     return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(new ApiErrorResponse(errors));
   }
 
@@ -84,7 +84,7 @@ public class ExceptionControllerAdvice
   {
     String parameterName = ex.getParameterName();
     LOG.warn("Missing request parameter: {}", parameterName);
-    List<ApiError> errors = Collections.singletonList(new ApiError(parameterName, "Required"));
+    List<ApiError> errors = Collections.singletonList(new ApiError(parameterName, ex.getMessage()));
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiErrorResponse(errors));
   }
 
@@ -93,7 +93,7 @@ public class ExceptionControllerAdvice
   {
     String headerName = ex.getHeaderName();
     LOG.warn("Missing request header: {}", headerName);
-    List<ApiError> errors = Collections.singletonList(new ApiError(headerName, "Required"));
+    List<ApiError> errors = Collections.singletonList(new ApiError(headerName, ex.getMessage()));
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiErrorResponse(errors));
   }
 
@@ -101,7 +101,7 @@ public class ExceptionControllerAdvice
   public ResponseEntity<ApiErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex)
   {
     LOG.warn("HTTP method not supported: {}", ex.getMethod());
-    List<ApiError> errors = Collections.singletonList(new ApiError("method", "NotSupported"));
+    List<ApiError> errors = Collections.singletonList(new ApiError("method", ex.getMessage()));
     return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(new ApiErrorResponse(errors));
   }
 
@@ -110,7 +110,7 @@ public class ExceptionControllerAdvice
   {
     String path = request.getRequestURI();
     LOG.warn("Invalid path: {}", path);
-    List<ApiError> errors = Collections.singletonList(new ApiError(path, "Invalid"));
+    List<ApiError> errors = Collections.singletonList(new ApiError(path, ex.getMessage()));
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiErrorResponse(errors));
   }
 
@@ -123,10 +123,10 @@ public class ExceptionControllerAdvice
   }
 
   @ExceptionHandler(HttpMessageNotReadableException.class)
-  public ResponseEntity<ApiErrorResponse> handleMessageNotReadable(HttpMessageNotReadableException ex)
+  public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex)
   {
     LOG.warn("Request body could not be read: {}", ex.getMessage());
-    List<ApiError> errors = Collections.singletonList(new ApiError("requestBody", "Malformed"));
+    List<ApiError> errors = Collections.singletonList(new ApiError("requestBody", ex.getMessage()));
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiErrorResponse(errors));
   }
 
