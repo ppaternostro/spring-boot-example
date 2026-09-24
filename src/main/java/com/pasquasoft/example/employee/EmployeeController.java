@@ -1,7 +1,6 @@
 package com.pasquasoft.example.employee;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.pasquasoft.example.model.Employee;
 
 import jakarta.validation.Valid;
+import tools.jackson.databind.JsonNode;
 
 /**
  * The employee controller.
@@ -107,7 +107,7 @@ public class EmployeeController
    * @return an updated employee matching the specified id
    */
   @PatchMapping(path = "/{id}", consumes = "application/json-patch+json", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Employee patchEmployee(@RequestBody List<Map<String, Object>> patch, @PathVariable Long id)
+  public Employee patchEmployee(@RequestBody JsonNode patch, @PathVariable Long id)
   {
     return employeeService.patch(patch, id);
   }

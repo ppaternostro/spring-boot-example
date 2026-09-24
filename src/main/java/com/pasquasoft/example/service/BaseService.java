@@ -5,8 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,10 +36,8 @@ public abstract class BaseService
     this.xmlMapper = xmlMapper;
   }
 
-  protected <T> T applyPatch(List<Map<String, Object>> jsonPatch, T targetObject, Class<T> targetType)
+  protected <T> T applyPatch(JsonNode patchNode, T targetObject, Class<T> targetType)
   {
-    JsonNode patchNode = objectMapper.valueToTree(jsonPatch);
-
     JsonNode targetNode = objectMapper.valueToTree(targetObject);
 
     JsonNode patchedNode = Jackson3JsonPatch.apply(patchNode, targetNode);

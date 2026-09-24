@@ -2,7 +2,6 @@ package com.pasquasoft.example.employee;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -17,6 +16,7 @@ import com.pasquasoft.example.service.BaseService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /**
@@ -102,7 +102,7 @@ public class EmployeeService extends BaseService
    * @param jsonPatch a list of map objects representing the patch JSON
    * @param id the id
    */
-  public Employee patch(List<Map<String, Object>> jsonPatch, Long id)
+  public Employee patch(JsonNode jsonPatch, Long id)
   {
     Employee unpatched = getEmployee(id);
     Employee patched;

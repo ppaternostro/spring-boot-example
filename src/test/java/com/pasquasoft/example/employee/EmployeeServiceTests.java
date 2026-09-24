@@ -162,7 +162,8 @@ public class EmployeeServiceTests
     when(employeeRepository.findById(4L)).thenReturn(Optional.of(unpatched));
     when(employeeRepository.save(any(Employee.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    List<Map<String, Object>> jsonPatch = List.of(Map.of("op", "replace", "path", "/lastName", "value", "Bulsara"));
+    JsonNode jsonPatch = objectMapper
+        .valueToTree(List.of(Map.of("op", "replace", "path", "/lastName", "value", "Bulsara")));
 
     Employee result = employeeService.patch(jsonPatch, 4L);
 
@@ -179,8 +180,8 @@ public class EmployeeServiceTests
 
     when(employeeRepository.findById(4L)).thenReturn(Optional.of(unpatched));
 
-    List<Map<String, Object>> jsonPatch = List
-        .of(Map.of("op", "replace", "path", "/nonexistentField", "value", "Bulsara"));
+    JsonNode jsonPatch = objectMapper
+        .valueToTree(List.of(Map.of("op", "replace", "path", "/nonexistentField", "value", "Bulsara")));
 
     assertThatThrownBy(() -> employeeService.patch(jsonPatch, 4L)).isInstanceOf(PatchConversionException.class)
         .hasMessageContaining("nonexistentField");
@@ -195,7 +196,8 @@ public class EmployeeServiceTests
     when(employeeRepository.findById(4L)).thenReturn(Optional.of(unpatched));
     when(objectMapper.treeToValue(any(JsonNode.class), eq(Employee.class))).thenThrow(mock(JacksonException.class));
 
-    List<Map<String, Object>> jsonPatch = List.of(Map.of("op", "replace", "path", "/firstName", "value", "New"));
+    JsonNode jsonPatch = objectMapper
+        .valueToTree(List.of(Map.of("op", "replace", "path", "/firstName", "value", "New")));
 
     assertThatThrownBy(() -> employeeService.patch(jsonPatch, 4L)).isInstanceOf(PatchConversionException.class);
   }
